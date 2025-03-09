@@ -9,9 +9,7 @@ services:
     depends_on:
       - rabbitmq
     container_name: rabbitmq-producer
-    build:
-      context: ./producer
-      dockerfile: Dockerfile
+    image: ghcr.io/szomelioza/rabbitmq-random-producer:latest
     environment:
       - RABBIT_MQ_HOST=rabbitmq
       - QUEUE_NAME=test
@@ -22,9 +20,7 @@ services:
     depends_on:
       - rabbitmq
     container_name: rabbitmq-consumer
-    build:
-      context: ./consumer
-      dockerfile: Dockerfile
+    image: ghcr.io/szomelioza/rabbitmq-random-consumer:latest
     environment:
       - RABBIT_MQ_HOST=rabbitmq
       - QUEUE_NAME=test
