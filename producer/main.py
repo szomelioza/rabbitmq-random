@@ -4,6 +4,7 @@ from random import randint
 from uuid import uuid4
 
 import pika
+import pika.exceptions
 
 RABBIT_MQ_HOST = os.getenv("RABBIT_MQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
@@ -11,12 +12,18 @@ SENT_MSG_LIMIT = int(os.getenv("SENT_MSG_LIMIT", "100"))
 
 
 def get_connection():
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(RABBIT_MQ_HOST)
-    )
-    channel = connection.channel()
-    channel.queue_declare(queue=QUEUE_NAME)
-    return connection, channel
+    for i in range(10):
+        try:
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(RABBIT_MQ_HOST)
+            )
+            channel = connection.channel()
+            channel.queue_declare(queue=QUEUE_NAME)
+            return connection, channel
+        except pika.exceptions.AMQPConnectionError:
+            print(f"WARNING: RabbitMQ unreachable. Retrying {i}")
+            time.sleep(5)
+    raise Exception("ERROR: Unable to connect to RabbitMQ!")
 
 
 def send_message(channel):
