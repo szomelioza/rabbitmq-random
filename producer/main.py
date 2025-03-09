@@ -1,10 +1,20 @@
+import logging
 import os
+import sys
 import time
 from random import randint
 from uuid import uuid4
 
 import pika
 import pika.exceptions
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler()]
+)
+logging.getLogger("pika").setLevel(logging.CRITICAL)
+logger = logging.getLogger(__name__)
 
 RABBIT_MQ_HOST = os.getenv("RABBIT_MQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
@@ -21,15 +31,15 @@ def get_connection():
             channel.queue_declare(queue=QUEUE_NAME)
             return connection, channel
         except pika.exceptions.AMQPConnectionError:
-            print(f"WARNING: RabbitMQ unreachable. Retrying {i}")
+            logger.warning(f"WARNING: RabbitMQ unreachable. Retrying {i}")
             time.sleep(5)
-    raise Exception("ERROR: Unable to connect to RabbitMQ!")
+    raise Exception("Unable to connect to RabbitMQ!")
 
 
 def send_message(channel):
     msg = uuid4().hex
     channel.basic_publish(exchange="", routing_key=QUEUE_NAME, body=msg)
-    print(f" Sent {msg}")
+    logger.info(f"Sent {msg}")
 
 
 def random_sleep():
@@ -37,20 +47,24 @@ def random_sleep():
 
 
 def main():
-    print("Producer starts...")
-    connection, channel = get_connection()
+    logger.info("Producer starts...")
+    try:
+        connection, channel = get_connection()
+    except Exception as e:
+        logger.error(e)
+        sys.exit(1)
 
     try:
         for _ in range(SENT_MSG_LIMIT):
             send_message(channel)
             random_sleep()
     except KeyboardInterrupt:
-        print("KeyboardInterrupt")
+        logger.error("KeyboardInterrupt")
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(e)
     finally:
         connection.close()
-        print("Producer ends.")
+        logger.info("Producer ends.")
 
 
 if __name__ == "__main__":
