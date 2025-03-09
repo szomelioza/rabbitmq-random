@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 RABBIT_MQ_HOST = os.getenv("RABBIT_MQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
 SENT_MSG_LIMIT = int(os.getenv("SENT_MSG_LIMIT", "100"))
+MIN_SLEEP = int(os.getenv("MINSLEEP", "0"))
+MAX_SLEEP = int(os.getenv("MAX_SLEEP", "3"))
 
 
 def get_connection():
@@ -43,7 +45,7 @@ def send_message(channel):
 
 
 def random_sleep():
-    time.sleep(randint(1, 10))
+    time.sleep(randint(MIN_SLEEP, MAX_SLEEP))
 
 
 def main():
