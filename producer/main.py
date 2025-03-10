@@ -7,8 +7,6 @@ from random import randint
 from uuid import uuid4
 
 import pika
-import pika.adapters.blocking_connection
-import pika.exceptions
 
 logging.basicConfig(
     level=logging.INFO,
