@@ -25,7 +25,7 @@ MAX_SLEEP = int(os.getenv("MAX_SLEEP", "3"))
 
 def get_connection() -> tuple[
     pika.BlockingConnection,
-    pika.adapters.blocking_connection.BlockingChannel
+    pika.channel.Channel
 ]:
     for i in range(10):
         try:
@@ -49,7 +49,7 @@ def get_msg_limit() -> int | None:
 
 
 def send_message(
-    channel: pika.adapters.blocking_connection.BlockingChannel
+    channel: pika.channel.Channel
 ) -> None:
     msg = uuid4().hex
     channel.basic_publish(exchange="", routing_key=QUEUE_NAME, body=msg)
