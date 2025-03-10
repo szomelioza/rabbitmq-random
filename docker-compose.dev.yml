@@ -1,0 +1,32 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+  producer:
+    depends_on:
+      - rabbitmq
+    container_name: rabbitmq-producer
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - QUEUE_NAME=test
+      - MIN_SLEEP=0
+      - MAX_SLEEP=3
+      - SENT_MSG_LIMIT=10
+  consumer:
+    depends_on:
+      - rabbitmq
+    container_name: rabbitmq-consumer
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - QUEUE_NAME=test
+      - MIN_SLEEP=5
+      - MAX_SLEEP=6
