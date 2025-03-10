@@ -17,7 +17,7 @@ services:
       - QUEUE_NAME=test
       - MIN_SLEEP=0
       - MAX_SLEEP=3
-      - SENT_MSG_LIMIT=10
+      - MSG_LIMIT=10
   consumer:
     depends_on:
       - rabbitmq

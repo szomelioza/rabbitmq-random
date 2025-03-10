@@ -21,7 +21,7 @@ For a Docker Compose example, see [docker-compose.yml](docker-compose.yml).
 | ---- | ----------- | ---- | ------- |
 | RABBITMQ_HOST | RabbitMQ server address | Required | N/A |
 | QUEUE_NAME | Name of the queue to send messages to | Required | N/A |
-| SENT_MSG_LIMIT | Number of messages to send | Optional | None (inifinity) |
+| MSG_LIMIT | Number of messages to send | Optional | None (inifinity) |
 | MIN_SLEEP | Minimum delay (in seconds) between messages | Optional | 0 |
 | MAX_SLEEP | Maximum delay (in seconds) between messages | Optional | 3 |
 ### Consumer

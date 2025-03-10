@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
-SENT_MSG_LIMIT = os.getenv("SENT_MSG_LIMIT")
+MSG_LIMIT = os.getenv("MSG_LIMIT")
 MIN_SLEEP = int(os.getenv("MINSLEEP", "0"))
 MAX_SLEEP = int(os.getenv("MAX_SLEEP", "3"))
 
@@ -41,7 +41,7 @@ def get_connection():
 
 def get_msg_limit():
     try:
-        return int(SENT_MSG_LIMIT)
+        return int(MSG_LIMIT)
     except TypeError:
         return None
 

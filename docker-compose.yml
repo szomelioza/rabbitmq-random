@@ -13,7 +13,7 @@ services:
     environment:
       - RABBITMQ_HOST=rabbitmq
       - QUEUE_NAME=test
-      - SENT_MSG_LIMIT=100
+      - MSG_LIMIT=100
       - MIN_SLEEP=0
       - MAX_SLEEP=3
   consumer:
