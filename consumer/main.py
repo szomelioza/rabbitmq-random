@@ -13,7 +13,7 @@ logging.basicConfig(
 logging.getLogger("pika").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-RABBIT_MQ_HOST = os.getenv("RABBIT_MQ_HOST")
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
 MIN_SLEEP = int(os.getenv("MINSLEEP", "3"))
 MAX_SLEEP = int(os.getenv("MAX_SLEEP", "5"))
@@ -23,7 +23,7 @@ def get_connection():
     for i in range(10):
         try:
             connection = pika.BlockingConnection(
-                pika.ConnectionParameters(RABBIT_MQ_HOST)
+                pika.ConnectionParameters(RABBITMQ_HOST)
             )
             channel = connection.channel()
             channel.queue_declare(queue=QUEUE_NAME)

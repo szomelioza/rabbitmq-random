@@ -11,7 +11,7 @@ services:
     container_name: rabbitmq-producer
     image: ghcr.io/szomelioza/rabbitmq-random-producer:latest
     environment:
-      - RABBIT_MQ_HOST=rabbitmq
+      - RABBITMQ_HOST=rabbitmq
       - QUEUE_NAME=test
       - SENT_MSG_LIMIT=100
       - MIN_SLEEP=0
@@ -22,7 +22,7 @@ services:
     container_name: rabbitmq-consumer
     image: ghcr.io/szomelioza/rabbitmq-random-consumer:latest
     environment:
-      - RABBIT_MQ_HOST=rabbitmq
+      - RABBITMQ_HOST=rabbitmq
       - QUEUE_NAME=test
       - MIN_SLEEP=5
       - MAX_SLEEP=6
