@@ -7,6 +7,7 @@ from random import randint
 from uuid import uuid4
 
 import pika
+import pika.adapters.blocking_connection
 import pika.exceptions
 
 logging.basicConfig(
@@ -24,7 +25,10 @@ MIN_SLEEP = int(os.getenv("MINSLEEP", "0"))
 MAX_SLEEP = int(os.getenv("MAX_SLEEP", "3"))
 
 
-def get_connection():
+def get_connection() -> tuple[
+    pika.BlockingConnection,
+    pika.adapters.blocking_connection.BlockingChannel
+]:
     for i in range(10):
         try:
             connection = pika.BlockingConnection(
@@ -39,24 +43,26 @@ def get_connection():
     raise Exception("Unable to connect to RabbitMQ!")
 
 
-def get_msg_limit():
+def get_msg_limit() -> int | None:
     try:
         return int(MSG_LIMIT)
     except TypeError:
         return None
 
 
-def send_message(channel):
+def send_message(
+    channel: pika.adapters.blocking_connection.BlockingChannel
+) -> None:
     msg = uuid4().hex
     channel.basic_publish(exchange="", routing_key=QUEUE_NAME, body=msg)
     logger.info(f"Sent {msg}")
 
 
-def random_sleep():
+def random_sleep() -> None:
     time.sleep(randint(MIN_SLEEP, MAX_SLEEP))
 
 
-def main():
+def main() -> None:
     logger.info("Producer starts...")
     try:
         connection, channel = get_connection()
