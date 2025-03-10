@@ -20,7 +20,10 @@ MIN_SLEEP = int(os.getenv("MINSLEEP", "3"))
 MAX_SLEEP = int(os.getenv("MAX_SLEEP", "5"))
 
 
-def get_connection():
+def get_connection() -> tuple[
+    pika.BlockingConnection,
+    pika.channel.Channel
+]:
     for i in range(10):
         try:
             connection = pika.BlockingConnection(
@@ -36,17 +39,22 @@ def get_connection():
     raise Exception("Unable to connect to RabbitMQ!")
 
 
-def random_sleep():
+def random_sleep() -> None:
     time.sleep(randint(MIN_SLEEP, MAX_SLEEP))
 
 
-def callback(ch, method, properties, body):
+def callback(
+    ch: pika.channel.Channel,
+    method: pika.spec.Basic.Deliver,
+    properties: pika.spec.BasicProperties,
+    body: bytes
+) -> None:
     logger.info(f" Received {body.decode()}")
     random_sleep()
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
-def main():
+def main() -> None:
     logger.info("Consumer starts...")
     try:
         connection, channel = get_connection()
