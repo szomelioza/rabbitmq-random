@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import sys
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
-SENT_MSG_LIMIT = int(os.getenv("SENT_MSG_LIMIT", "100"))
+SENT_MSG_LIMIT = os.getenv("SENT_MSG_LIMIT")
 MIN_SLEEP = int(os.getenv("MINSLEEP", "0"))
 MAX_SLEEP = int(os.getenv("MAX_SLEEP", "3"))
 
@@ -38,6 +39,13 @@ def get_connection():
     raise Exception("Unable to connect to RabbitMQ!")
 
 
+def get_msg_limit():
+    try:
+        return int(SENT_MSG_LIMIT)
+    except TypeError:
+        return None
+
+
 def send_message(channel):
     msg = uuid4().hex
     channel.basic_publish(exchange="", routing_key=QUEUE_NAME, body=msg)
@@ -55,9 +63,9 @@ def main():
     except Exception as e:
         logger.error(e)
         sys.exit(1)
-
     try:
-        for _ in range(SENT_MSG_LIMIT):
+        msg_limit = get_msg_limit()
+        for _ in itertools.islice(itertools.count(), msg_limit):
             send_message(channel)
             random_sleep()
     except KeyboardInterrupt:
