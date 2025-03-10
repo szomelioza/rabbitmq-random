@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import time
 from random import randint
 
@@ -47,7 +48,11 @@ def callback(ch, method, properties, body):
 
 def main():
     logger.info("Consumer starts...")
-    connection, channel = get_connection()
+    try:
+        connection, channel = get_connection()
+    except Exception as e:
+        logger.error(e)
+        sys.exit(1)
 
     try:
         channel.basic_consume(
