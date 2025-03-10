@@ -27,6 +27,16 @@ def get_connection() -> tuple[
     pika.BlockingConnection,
     pika.channel.Channel
 ]:
+    """Get RabbitMQ connection and channel
+
+    Returns:
+        tuple: RabbitMQ connection (pika.BlockingConnection) and
+        RabbitMQ channel (pika.channel.Channel) where messages will be sent to
+
+    Raises:
+        Exception: If after retries it's still
+        not possible to establish connection
+    """
     for i in range(10):
         try:
             connection = pika.BlockingConnection(
@@ -42,6 +52,12 @@ def get_connection() -> tuple[
 
 
 def get_msg_limit() -> int | None:
+    """Get number of messages to send
+
+    Returns:
+        int | None: Number of messages to send
+        or None for infinite amount
+    """
     try:
         return int(MSG_LIMIT)
     except TypeError:
@@ -51,16 +67,37 @@ def get_msg_limit() -> int | None:
 def send_message(
     channel: pika.channel.Channel
 ) -> None:
+    """Send message to the channel
+
+    Args:
+        channel (pika.channel.Channel): Channel used to send messages
+
+    Returns:
+        None
+    """
     msg = uuid4().hex
     channel.basic_publish(exchange="", routing_key=QUEUE_NAME, body=msg)
     logger.info(f"Sent {msg}")
 
 
 def random_sleep() -> None:
+    """Sleep for random time based on min and max provided
+
+    Returns:
+        None
+    """
     time.sleep(randint(MIN_SLEEP, MAX_SLEEP))
 
 
 def main() -> None:
+    """Run program loop to send messages
+
+    Establish connection to RabbitMQ and run loop until there
+    are messages to send.
+
+    Returns:
+        None
+    """
     logger.info("Producer starts...")
     try:
         connection, channel = get_connection()
