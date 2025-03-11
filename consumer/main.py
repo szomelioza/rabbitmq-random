@@ -24,6 +24,16 @@ def get_connection() -> tuple[
     pika.BlockingConnection,
     pika.channel.Channel
 ]:
+    """Get RabbitMQ connection and channel
+
+    Returns:
+        tuple: RabbitMQ connection (pika.BlockingConnection) and
+        RabbitMQ channel (pika.channel.Channel) where messages will be sent to
+
+    Raises:
+        Exception: If after retries it's still
+        not possible to establish connection
+    """
     for i in range(10):
         try:
             connection = pika.BlockingConnection(
@@ -40,21 +50,41 @@ def get_connection() -> tuple[
 
 
 def random_sleep() -> None:
+    """Sleep for random time based on min and max provided
+
+    Returns:
+        None
+    """
     time.sleep(randint(MIN_SLEEP, MAX_SLEEP))
 
 
 def callback(
-    ch: pika.channel.Channel,
+    channel: pika.channel.Channel,
     method: pika.spec.Basic.Deliver,
     properties: pika.spec.BasicProperties,
     body: bytes
 ) -> None:
+    """Sleep and send ack once message is received
+
+    Args:
+        channel (pika.channel.Channel): Channel of received message
+        method (pika.spec.Basic.Deliver): Message metadata
+        properties: (pika.spec.BasicProperties): Message properties
+        body (bytes): Message
+    """
     logger.info(f" Received {body.decode()}")
     random_sleep()
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+    channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def main() -> None:
+    """Run program loop to receive messages
+
+    Establish connection to RabbitMQ and listen for message in queue.
+
+    Returns:
+        None
+    """
     logger.info("Consumer starts...")
     try:
         connection, channel = get_connection()
