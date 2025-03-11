@@ -10,21 +10,21 @@ services:
       - rabbitmq
     container_name: rabbitmq-producer
     build:
-      context: ./producer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: producer/Dockerfile
     environment:
       - RABBITMQ_HOST=rabbitmq
       - QUEUE_NAME=test
       - MIN_SLEEP=0
       - MAX_SLEEP=3
-      - MSG_LIMIT=10
+      - MSG_LIMIT=1000
   consumer:
     depends_on:
       - rabbitmq
     container_name: rabbitmq-consumer
     build:
-      context: ./consumer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: consumer/Dockerfile
     environment:
       - RABBITMQ_HOST=rabbitmq
       - QUEUE_NAME=test

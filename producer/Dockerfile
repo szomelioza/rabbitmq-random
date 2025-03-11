@@ -2,9 +2,10 @@ FROM python:3.12-alpine3.21
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY setup.py .
+COPY common/ common/
+COPY producer/ producer/
 
-COPY main.py .
+RUN pip install . --no-cache-dir -r producer/requirements.txt
 
-ENTRYPOINT [ "python3", "main.py" ]
+ENTRYPOINT [ "python3", "-m", "producer.main" ]

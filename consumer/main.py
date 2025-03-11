@@ -1,10 +1,10 @@
 import logging
 import os
 import sys
-import time
-from random import randint
 
 import pika
+
+from common.utils import get_connection, random_sleep
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,44 +18,6 @@ RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
 MIN_SLEEP = int(os.getenv("MINSLEEP", "3"))
 MAX_SLEEP = int(os.getenv("MAX_SLEEP", "5"))
-
-
-def get_connection() -> tuple[
-    pika.BlockingConnection,
-    pika.channel.Channel
-]:
-    """Get RabbitMQ connection and channel
-
-    Returns:
-        tuple: RabbitMQ connection (pika.BlockingConnection) and
-        RabbitMQ channel (pika.channel.Channel) where messages will be sent to
-
-    Raises:
-        Exception: If after retries it's still
-        not possible to establish connection
-    """
-    for i in range(10):
-        try:
-            connection = pika.BlockingConnection(
-                pika.ConnectionParameters(RABBITMQ_HOST)
-            )
-            channel = connection.channel()
-            channel.queue_declare(queue=QUEUE_NAME)
-            channel.basic_qos(prefetch_count=1)
-            return connection, channel
-        except pika.exceptions.AMQPConnectionError:
-            logger.warning(f"WARNING: RabbitMQ unreachable. Retrying {i}")
-            time.sleep(5)
-    raise Exception("Unable to connect to RabbitMQ!")
-
-
-def random_sleep() -> None:
-    """Sleep for random time based on min and max provided
-
-    Returns:
-        None
-    """
-    time.sleep(randint(MIN_SLEEP, MAX_SLEEP))
 
 
 def callback(
@@ -72,8 +34,8 @@ def callback(
         properties: (pika.spec.BasicProperties): Message properties
         body (bytes): Message
     """
-    logger.info(f" Received {body.decode()}")
-    random_sleep()
+    logger.info(f"Received {body.decode()}")
+    random_sleep(MIN_SLEEP, MAX_SLEEP)
     channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
@@ -87,7 +49,7 @@ def main() -> None:
     """
     logger.info("Consumer starts...")
     try:
-        connection, channel = get_connection()
+        connection, channel = get_connection(RABBITMQ_HOST, QUEUE_NAME)
     except Exception as e:
         logger.error(e)
         sys.exit(1)
