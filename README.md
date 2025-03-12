@@ -1,5 +1,8 @@
 # rabbitmq-random
 
+![](https://github.com/szomelioza/rabbitmq-random/actions/workflows/build-producer.yml/badge.svg)
+![](https://github.com/szomelioza/rabbitmq-random/actions/workflows/build-consumer.yml/badge.svg)
+
 A simple RabbitMQ producer/consumer setup for testing queue behavior.
 
 - The **producer** sends messages at random intervals.
