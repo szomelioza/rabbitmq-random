@@ -1,4 +1,4 @@
-name: Build Consumer
+name: Test & Build Consumer
 on:
   push:
     branches:
@@ -10,8 +10,17 @@ permissions:
   contents: read
   packages: write
 jobs:
+  test:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          pip install . -r consumer/requirements.txt -r tests/requirements.txt
+      - run: |
+          pytest tests/common tests/consumer
   build:
     runs-on: "ubuntu-latest"
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - name: Login to GHCR
