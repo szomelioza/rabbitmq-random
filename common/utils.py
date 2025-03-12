@@ -1,10 +1,11 @@
-import logging
 import time
 from random import randint
 
 import pika
 
-logger = logging.getLogger(__name__)
+from common.logger import get_logger
+
+logger = get_logger()
 
 
 def get_connection(rabbitmq_host: str, queue_name: str) -> tuple[
@@ -35,7 +36,7 @@ def get_connection(rabbitmq_host: str, queue_name: str) -> tuple[
             logger.info("Connected to RabbitMQ")
             return connection, channel
         except pika.exceptions.AMQPConnectionError:
-            logger.warning(f"WARNING: RabbitMQ unreachable. Retrying {i}")
+            logger.warning(f"RabbitMQ unreachable. Retrying {i}")
             time.sleep(5)
     raise Exception("Unable to connect to RabbitMQ!")
 

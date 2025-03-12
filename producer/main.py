@@ -1,20 +1,14 @@
 import itertools
-import logging
 import os
 import sys
 from uuid import uuid4
 
 import pika
 
+from common.logger import get_logger
 from common.utils import get_connection, random_sleep
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-logging.getLogger("pika").setLevel(logging.CRITICAL)
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
