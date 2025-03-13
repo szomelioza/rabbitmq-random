@@ -20,7 +20,8 @@ def get_connection(rabbitmq_host: str, queue_name: str) -> tuple[
 
     Returns:
         tuple: RabbitMQ connection (pika.BlockingConnection) and
-        RabbitMQ channel (pika.channel.Channel) where messages will be sent to
+        RabbitMQ channel (pika.channel.Channel) where messages
+        will be sent/received
 
     Raises:
         Exception: If after retries it's still

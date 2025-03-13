@@ -13,6 +13,74 @@ from producer.constants import CONFIG_VALUES
 logger = get_logger()
 
 
+def load_config() -> Config:
+    """Load config from environment variables
+
+    Returns:
+        Config: Object that contains parsed env vars
+    """
+    try:
+        config = Config(CONFIG_VALUES).read()
+        return config
+    except RequiredEnvVarNotSet as e:
+        logger.error(f"Required env var not set: {e}")
+        sys.exit(1)
+    except InalidEnvVar as e:
+        logger.error(f"Invalid value for variable: {e}")
+        sys.exit(1)
+
+
+def connect(host: str, queue: str) -> tuple[
+    pika.BlockingConnection,
+    pika.channel.Channel
+]:
+    """Establish connection with RabbitMQ host
+
+    Args:
+        host (str): Address of RabbitMQ server
+        queue (str): Name of the queue to use
+
+    Returns:
+        tuple: RabbitMQ connection (pika.BlockingConnection) and
+        RabbitMQ channel (pika.channel.Channel) where messages will be sent to
+    """
+    try:
+        connection, channel = get_connection(
+            host,
+            queue
+        )
+        return connection, channel
+    except Exception as e:
+        logger.error(e)
+        sys.exit(1)
+
+
+def run_loop(
+    msg_limit: int | None,
+    channel: pika.channel.Channel,
+    queue_name: str,
+    min_sleep: int,
+    max_sleep: int
+):
+    """Run program loop to send messages to queue
+
+    Args:
+        msg_limit (str | None): Limit of messages to send
+        channel (pika.channel.Channel): Channel used to send messages
+        queue_name (str): Name of the queue
+        min_sleep (int): Minimum time to sleep
+        max_sleep (int): Maximum time to sleep
+    """
+    try:
+        for _ in itertools.islice(itertools.count(), msg_limit):
+            send_message(channel, queue_name)
+            random_sleep(min_sleep, max_sleep)
+    except KeyboardInterrupt:
+        logger.error("KeyboardInterrupt")
+    except Exception as e:
+        logger.error(e)
+
+
 def send_message(
     channel: pika.channel.Channel,
     queue_name: str
@@ -41,34 +109,23 @@ def main() -> None:
         None
     """
     logger.info("Producer starts...")
-    try:
-        config = Config(CONFIG_VALUES).read()
-    except RequiredEnvVarNotSet as e:
-        logger.error(f"Required env var not set: {e}")
-        sys.exit(1)
-    except InalidEnvVar as e:
-        logger.error(f"Invalid value for variable: {e}")
-        sys.exit(1)
 
-    try:
-        connection, channel = get_connection(
-            config.RABBITMQ_HOST,
-            config.QUEUE_NAME
-        )
-    except Exception as e:
-        logger.error(e)
-        sys.exit(1)
-    try:
-        for _ in itertools.islice(itertools.count(), config.MSG_LIMIT):
-            send_message(channel, config.QUEUE_NAME)
-            random_sleep(config.MIN_SLEEP, config.MAX_SLEEP)
-    except KeyboardInterrupt:
-        logger.error("KeyboardInterrupt")
-    except Exception as e:
-        logger.error(e)
-    finally:
-        connection.close()
-        logger.info("Producer ends.")
+    config = load_config()
+    connection, channel = connect(
+        config.RABBITMQ_HOST,
+        config.QUEUE_NAME
+    )
+
+    run_loop(
+        msg_limit=config.MSG_LIMIT,
+        channel=channel,
+        queue_name=config.QUEUE_NAME,
+        min_sleep=config.MIN_SLEEP,
+        max_sleep=config.MAX_SLEEP
+    )
+
+    connection.close()
+    logger.info("Producer ends.")
 
 
 if __name__ == "__main__":
