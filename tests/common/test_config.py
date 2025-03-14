@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 
 from common.config import Config
-from common.exceptions import InalidEnvVar, RequiredEnvVarNotSet
 
 
 @pytest.fixture
@@ -57,9 +56,10 @@ def test_default_values_used(config_values):
 
 
 @patch.dict(os.environ, {}, clear=True)
-def test_missing_env(config_values):
-    with pytest.raises(RequiredEnvVarNotSet, match="RABBITMQ_HOST"):
-        Config(config_values).read()
+@patch("common.config.sys.exit")
+def test_missing_env(mock_exit, config_values):
+    Config(config_values).read()
+    mock_exit.assert_called_once_with(1)
 
 
 @patch.dict(
@@ -70,6 +70,7 @@ def test_missing_env(config_values):
     },
     clear=True
 )
-def test_invalid_env(config_values):
-    with pytest.raises(InalidEnvVar, match="MSG_LIMIT"):
-        Config(config_values).read()
+@patch("common.config.sys.exit")
+def test_invalid_env(mock_exit, config_values):
+    Config(config_values).read()
+    mock_exit.assert_called_once_with(1)

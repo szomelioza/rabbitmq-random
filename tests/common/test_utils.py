@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pika
-import pytest
 
 from common.utils import get_connection, random_sleep
 
@@ -25,11 +24,12 @@ def test_get_connection_success(mock_connection):
     side_effect=pika.exceptions.AMQPConnectionError
 )
 @patch("common.utils.time.sleep")
-def test_get_connection_fail(mock_sleep, mock_connection):
+@patch("common.utils.sys.exit")
+def test_get_connection_fail(mock_exit, mock_sleep, mock_connection):
 
-    with pytest.raises(Exception, match="Unable to connect to RabbitMQ!"):
-        get_connection("host", "queue")
+    get_connection("host", "queue")
 
+    mock_exit.assert_called_once_with(1)
     assert mock_connection.call_count == 10
     assert mock_sleep.call_count == 10
 

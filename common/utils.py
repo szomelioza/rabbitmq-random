@@ -1,3 +1,4 @@
+import sys
 import time
 from random import randint
 
@@ -14,6 +15,9 @@ def get_connection(rabbitmq_host: str, queue_name: str) -> tuple[
 ]:
     """Get RabbitMQ connection and channel
 
+    Function will exit if connection cannot be established
+    after retries.
+
     Args:
         rabbitmq_host (str): RabbitMQ host
         queue_name (str): Name of the queue
@@ -22,10 +26,6 @@ def get_connection(rabbitmq_host: str, queue_name: str) -> tuple[
         tuple: RabbitMQ connection (pika.BlockingConnection) and
         RabbitMQ channel (pika.channel.Channel) where messages
         will be sent/received
-
-    Raises:
-        Exception: If after retries it's still
-        not possible to establish connection
     """
     for i in range(10):
         try:
@@ -39,7 +39,8 @@ def get_connection(rabbitmq_host: str, queue_name: str) -> tuple[
         except pika.exceptions.AMQPConnectionError:
             logger.warning(f"RabbitMQ unreachable. Retrying {i}")
             time.sleep(5)
-    raise Exception("Unable to connect to RabbitMQ!")
+    logger.error("Unable to connect to RabbitMQ!")
+    sys.exit(1)
 
 
 def random_sleep(min: int, max: int) -> None:

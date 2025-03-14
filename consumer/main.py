@@ -1,57 +1,13 @@
 import functools
-import sys
 
 import pika
 
 from common.config import Config
-from common.exceptions import InalidEnvVar, RequiredEnvVarNotSet
 from common.logger import get_logger
 from common.utils import get_connection, random_sleep
 from consumer.constants import CONFIG_VALUES
 
 logger = get_logger()
-
-
-def load_config() -> Config:
-    """Load config from environment variables
-
-    Returns:
-        Config: Object that contains parsed env vars
-    """
-    try:
-        config = Config(CONFIG_VALUES).read()
-        return config
-    except RequiredEnvVarNotSet as e:
-        logger.error(f"Required env var not set: {e}")
-        sys.exit(1)
-    except InalidEnvVar as e:
-        logger.error(f"Invalid value for variable: {e}")
-        sys.exit(1)
-
-
-def connect(host: str, queue: str) -> tuple[
-    pika.BlockingConnection,
-    pika.channel.Channel
-]:
-    """Establish connection with RabbitMQ host
-
-    Args:
-        host (str): Address of RabbitMQ server
-        queue (str): Name of the queue to use
-
-    Returns:
-        tuple: RabbitMQ connection (pika.BlockingConnection) and
-        RabbitMQ channel (pika.channel.Channel) for receiving messages
-    """
-    try:
-        connection, channel = get_connection(
-            host,
-            queue
-        )
-        return connection, channel
-    except Exception as e:
-        logger.error(e)
-        sys.exit(1)
 
 
 def run_loop(
@@ -120,8 +76,8 @@ def main() -> None:
     """
     logger.info("Consumer starts...")
 
-    config = load_config()
-    connection, channel = connect(
+    config = Config(CONFIG_VALUES).read()
+    connection, channel = get_connection(
         config.RABBITMQ_HOST,
         config.QUEUE_NAME
     )
